@@ -1,6 +1,8 @@
 package com.ithebk.spendeasy
 
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.*
@@ -12,17 +14,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.materialIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.ithebk.spendeasy.ui.theme.SpendEasyTheme
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SpendEasyTheme {
-                LayoutSpendEasy()
+                LayoutSpendEasy(this)
             }
         }
     }
@@ -45,25 +46,26 @@ class MainActivity : ComponentActivity() {
 @ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @Composable
-fun LayoutSpendEasy() {
+fun LayoutSpendEasy(context : Context) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "Spend Easy", color = Color.Black)
+                CustomTopBar {
+                    //println("Holla")
+                    Toast.makeText(context, "hello", Toast.LENGTH_LONG).show()
+                }
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = {  Text(text = "Add new") },
+                onClick = {
+
                 },
-                elevation = 2.dp,
+                icon ={ Icon(Icons.Filled.Add,"")}
             )
         },
-        bottomBar = {
-            BottomAppBar(
-                cutoutShape = CircleShape
-            ) {
-
-            }
-        }
+        floatingActionButtonPosition = FabPosition.Center
     ) {
-        LazyList(modifier = Modifier
+        BodyContent(modifier = Modifier
             .fillMaxWidth()
             .padding(it)
             .padding(16.dp))
@@ -119,14 +121,12 @@ fun LazyList(modifier: Modifier) {
 
 }
 
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @Composable
 fun BodyContent(modifier: Modifier) {
 
     val (gesturesEnabled, toggleGesturesEnabled) = remember { mutableStateOf(true) }
-    val (icon, toggleIcon) = remember {
-        mutableStateOf( Icons.Default.Favorite)
-    }
     val scope = rememberCoroutineScope()
     Column {
         Row(
@@ -140,7 +140,7 @@ fun BodyContent(modifier: Modifier) {
             Checkbox(gesturesEnabled, null)
             Text(text = if (gesturesEnabled) "Gestures Enabled" else "Gestures Disabled")
         }
-        val drawerState = rememberBottomDrawerState(BottomDrawerValue.Open)
+        val drawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
         BottomDrawer(
             gesturesEnabled = gesturesEnabled,
             drawerState = drawerState,
@@ -149,24 +149,12 @@ fun BodyContent(modifier: Modifier) {
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 16.dp),
-                    onClick = { scope.launch { drawerState.close() } },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                              },
                     content = { Text("Close Drawer") }
                 )
-                LazyColumn {
-                    items(25) {
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                toggleIcon(Icons.Default.Face)
-                            }){
-                            Icon(
-                                icon,
-                                contentDescription = "Localized description"
-                            )
-                            Text("Item $it")
-                    }
-                    }
-                }
+                LazyList(modifier = modifier)
             },
             content = {
                 Column(
